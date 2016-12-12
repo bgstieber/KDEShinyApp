@@ -28,10 +28,18 @@ dd2015 <- pga2015 %>%
 
 dd <- c(dd1986[[1]]$AVG., dd1996[[1]]$AVG., dd2015[[1]]$AVG.)
 
-
-# Define server logic required to draw a histogram
 shinyServer(function(input, output) {
   
+    inFile <- reactive({input$file1})
+    
+    data.upload <- reactive({
+        if(is.null(inFile())){
+            NULL
+        }else{
+            read.csv(inFile()$datapath, header = input$header,
+                     sep = input$sep, quote = input$quote)[,1]
+        }
+    })
     
   mydata <- reactive({list(
     'n1' = rnorm(input$N),
@@ -39,7 +47,8 @@ shinyServer(function(input, output) {
              rnorm(n = input$N / 2, mean = 4, sd = 2)),
     'old' = faithful[,2],
     'beer' = abv.complete,
-    'golf' = dd
+    'golf' = dd,
+    'upload' = c(data.upload())
   )[[input$data]]})
   
   rev_h <- c('SJ' = 'Sheather-Jones',
@@ -52,33 +61,28 @@ shinyServer(function(input, output) {
                  'n2' = '0.5 N(0,1) + 0.5 N(4, 4)',
                  'old' = 'Old Faithful Waiting Times (minutes)',
                  'beer' = 'ABV for top 250 Beers (%)',
-                 'golf' = 'PGA Tour Driving Distance (1986, 1996, 2015) (yards)')})
+                 'golf' = 'PGA Tour Driving Distance (1986, 1996, 2015) (yards)',
+                 'upload' = 'Your Data')})
   
   leg.pos <- reactive({switch(input$data,
                             'n1' = 'topleft',
                             'n2' = 'topright',
                             'old' = 'topleft',
                             'beer' = 'topright',
-                            'golf' = 'topright')})
+                            'golf' = 'topright',
+                            'upload' = 'topleft')})
   
   
-  
-  # Expression that generates a histogram. The expression is
-  # wrapped in a call to renderPlot to indicate that:
-  #
-  #  1) It is "reactive" and therefore should re-execute automatically
-  #     when inputs change
-  #  2) Its output type is a plot
+
   output$distPlot <- renderPlot({
- # Old Faithful Geyser data
-    #x    <- mydata[[input$data]]
+
     x <- mydata()
     bins <- seq(min(x), max(x), length.out = input$bins + 1)
     h.MS <- 3 * ((2 * sqrt(pi))^(-1) / (35 * length(x)))^(1/5) * sd(x)
     
     my_fav_colors <- c("#E41A1C", "#377EB8", "#4DAF4A", "#984EA3")
     
-    # draw the histogram with the specified number of bins
+    
     hist(x, breaks = bins, col = 'grey93',
          probability = input$dens,
          xlab = x.lab(),
