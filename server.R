@@ -2,6 +2,33 @@ library(shiny)
 library(rvest)
 library(RCurl)
 
+git_file <- 
+    getURL("https://raw.githubusercontent.com/bgstieber/Top250Beer/master/Top250Beers.csv")
+beer_data <- read.csv(text = git_file, stringsAsFactors = FALSE)
+abv.complete <- beer_data[!is.na(beer_data$ABV), ]$ABV
+
+pga1986 <- read_html('http://www.pgatour.com/stats/stat.101.1986.html')
+pga1996 <- read_html('http://www.pgatour.com/stats/stat.101.1996.html')
+pga2015 <- read_html('http://www.pgatour.com/stats/stat.101.2015.html')
+
+dd1986 <- pga1986 %>% 
+    html_nodes('table') %>%
+    .[2] %>%
+    html_table(., header = TRUE)
+
+dd1996 <- pga1996 %>% 
+    html_nodes('table') %>%
+    .[2] %>%
+    html_table(., header = TRUE)
+
+dd2015 <- pga2015 %>%
+    html_nodes('table') %>%
+    .[2] %>%
+    html_table(., header = TRUE)
+
+dd <- c(dd1986[[1]]$AVG., dd1996[[1]]$AVG., dd2015[[1]]$AVG.)
+
+
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
   
@@ -11,13 +38,30 @@ shinyServer(function(input, output) {
     'n2' = c(rnorm(n = input$N / 2), 
              rnorm(n = input$N / 2, mean = 4, sd = 2)),
     'old' = faithful[,2],
-    'cars' = mtcars[,1]
+    'beer' = abv.complete,
+    'golf' = dd
   )[[input$data]]})
   
   rev_h <- c('SJ' = 'Sheather-Jones',
              'MS' = 'Maximal Smoothing',
              'nrd0' = 'Silverman ROT',
              'ucv' = 'Unbiased CV')
+  
+  x.lab <- reactive({switch(input$data,
+                 'n1' = 'N(0,1)',
+                 'n2' = '0.5 N(0,1) + 0.5 N(4, 4)',
+                 'old' = 'Old Faithful Waiting Times (minutes)',
+                 'beer' = 'ABV for top 250 Beers (%)',
+                 'golf' = 'PGA Tour Driving Distance (1986, 1996, 2015) (yards)')})
+  
+  leg.pos <- reactive({switch(input$data,
+                            'n1' = 'topleft',
+                            'n2' = 'topright',
+                            'old' = 'topleft',
+                            'beer' = 'topright',
+                            'golf' = 'topright')})
+  
+  
   
   # Expression that generates a histogram. The expression is
   # wrapped in a call to renderPlot to indicate that:
@@ -36,7 +80,9 @@ shinyServer(function(input, output) {
     
     # draw the histogram with the specified number of bins
     hist(x, breaks = bins, col = 'grey93',
-         probability = input$dens)
+         probability = input$dens,
+         xlab = x.lab(),
+         main = '')
     
     if(input$dens){
       lines(density(x, bw = input$bw))
@@ -58,7 +104,7 @@ shinyServer(function(input, output) {
             paste(rev_h[names(rev_h) == y], '-', round(density(x, bw = y)$bw, 2))
           }
         )
-        legend('topleft', legend = lgd_text, col = my_fav_colors[1:length(input$bws)],
+        legend(leg.pos(), legend = lgd_text, col = my_fav_colors[1:length(input$bws)],
                lty = 1, lwd = 2)
       }
     }
