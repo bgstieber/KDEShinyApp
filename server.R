@@ -3,15 +3,22 @@ library(shiny)
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
   
+  mydata <- list(
+    'n1' = rnorm(300),
+    'n2' = rnorm(300, 2, 2),
+    'n3' = c(rnorm(150), rnorm(150, 2, 2)),
+    'old' = faithful[,2]
+  )
+  
   # Expression that generates a histogram. The expression is
   # wrapped in a call to renderPlot to indicate that:
   #
   #  1) It is "reactive" and therefore should re-execute automatically
   #     when inputs change
   #  2) Its output type is a plot
-  
   output$distPlot <- renderPlot({
-    x    <- faithful[, 2]  # Old Faithful Geyser data
+ # Old Faithful Geyser data
+    x    <- mydata[[input$data]]
     bins <- seq(min(x), max(x), length.out = input$bins + 1)
     h.MS <- 3 * ((2 * sqrt(pi))^(-1) / (35 * length(x)))^(1/5) * sd(x)
     
