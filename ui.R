@@ -1,24 +1,31 @@
 library(shiny)
 
-# Define UI for application that draws a histogram
 shinyUI(fluidPage(
   
   # Application title
   titlePanel("Bandwidth Selection Demonstration"),
   
-  # Sidebar with a slider input for the number of bins
+
   sidebarLayout(
     sidebarPanel(
+      
       radioButtons('data', 'Data',
                    choices = c('N(0,1)' = 'n1',
-                               'N(2, 4)' = 'n2',
-                               '0.5 N(0,1) + 0.5 N(2,4)' = 'n3',
-                               'Old Faithful' = 'old')),
+                               '0.5 N(0,1) + 0.5 N(4,4)' = 'n2',
+                               'Old Faithful' = 'old',
+                               'MPG' = 'cars')),
+      conditionalPanel("(input.data != 'old' & input.data != 'cars')",
+      sliderInput("N",
+                  "N:",
+                  min = 100,
+                  max = 1000,
+                  value = 300)
+      ),
       
       sliderInput("bins",
-                  "Number of bins:",
+                  "Histogram bins:",
                   min = 5,
-                  max = 50,
+                  max = 75,
                   value = 25),
       radioButtons('dens',
                    'Plot Density',
@@ -34,7 +41,7 @@ shinyUI(fluidPage(
                                                       'Maximal Smoothing' = 'MS')))
       ),
     
-    # Show a plot of the generated distribution
+
     mainPanel(
       plotOutput("distPlot")
     )
