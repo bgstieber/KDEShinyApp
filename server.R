@@ -10,6 +10,11 @@ shinyServer(function(input, output) {
     'old' = faithful[,2]
   )
   
+  rev_h <- c('SJ' = 'Sheather-Jones',
+             'MS' = 'Maximal Smoothing',
+             'nrd0' = 'Silverman ROT',
+             'ucv' = 'Unbiased CV')
+  
   # Expression that generates a histogram. The expression is
   # wrapped in a call to renderPlot to indicate that:
   #
@@ -43,9 +48,9 @@ shinyServer(function(input, output) {
         
         lgd_text <- lapply(input$bws, function(y) 
           if(y == 'MS'){
-          paste(y, '-', round(h.MS, 2))
+          paste(rev_h[names(rev_h) == y], '-', round(h.MS, 2))
           }else{
-            paste(y, '-', round(density(x, bw = y)$bw, 2))
+            paste(rev_h[names(rev_h) == y], '-', round(density(x, bw = y)$bw, 2))
           }
         )
         legend('topleft', legend = lgd_text, col = my_fav_colors[1:length(input$bws)],
