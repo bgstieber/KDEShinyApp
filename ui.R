@@ -4,11 +4,17 @@ library(shiny)
 shinyUI(fluidPage(
   
   # Application title
-  titlePanel("Old Faithful Waiting Times KDE"),
+  titlePanel("Bandwidth Selection Demonstration"),
   
   # Sidebar with a slider input for the number of bins
   sidebarLayout(
     sidebarPanel(
+      radioButtons('data', 'Data',
+                   choices = c('N(0,1)' = 'n1',
+                               'N(2, 4)' = 'n2',
+                               '0.5 N(0,1) + 0.5 N(2,4)' = 'n3',
+                               'Old Faithful' = 'old')),
+      
       sliderInput("bins",
                   "Number of bins:",
                   min = 5,
