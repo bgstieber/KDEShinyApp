@@ -1,14 +1,18 @@
 library(shiny)
+library(rvest)
+library(RCurl)
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
   
-  mydata <- list(
-    'n1' = rnorm(300),
-    'n2' = rnorm(300, 2, 2),
-    'n3' = c(rnorm(150), rnorm(150, 2, 2)),
-    'old' = faithful[,2]
-  )
+    
+  mydata <- reactive({list(
+    'n1' = rnorm(input$N),
+    'n2' = c(rnorm(n = input$N / 2), 
+             rnorm(n = input$N / 2, mean = 4, sd = 2)),
+    'old' = faithful[,2],
+    'cars' = mtcars[,1]
+  )[[input$data]]})
   
   rev_h <- c('SJ' = 'Sheather-Jones',
              'MS' = 'Maximal Smoothing',
@@ -23,14 +27,15 @@ shinyServer(function(input, output) {
   #  2) Its output type is a plot
   output$distPlot <- renderPlot({
  # Old Faithful Geyser data
-    x    <- mydata[[input$data]]
+    #x    <- mydata[[input$data]]
+    x <- mydata()
     bins <- seq(min(x), max(x), length.out = input$bins + 1)
     h.MS <- 3 * ((2 * sqrt(pi))^(-1) / (35 * length(x)))^(1/5) * sd(x)
     
     my_fav_colors <- c("#E41A1C", "#377EB8", "#4DAF4A", "#984EA3")
     
     # draw the histogram with the specified number of bins
-    hist(x, breaks = bins, col = 'grey90',
+    hist(x, breaks = bins, col = 'grey93',
          probability = input$dens)
     
     if(input$dens){
