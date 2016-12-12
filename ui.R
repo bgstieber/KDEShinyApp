@@ -14,7 +14,44 @@ shinyUI(fluidPage(
                                '0.5 N(0,1) + 0.5 N(4,4)' = 'n2',
                                'Old Faithful' = 'old',
                                'Beer ABV' = 'beer',
-                               'PGA Tour Driving Distance (1986, 1996, 2015)' = 'golf')),
+                               'PGA Tour Driving Distance (1986, 1996, 2015)' = 'golf',
+                               'Upload' = 'upload')),
+      conditionalPanel("input.data == 'upload'",
+                       fileInput('file1', 'Choose file to upload',
+                                 accept = c(
+                                     'text/csv',
+                                     'text/comma-separated-values',
+                                     'text/tab-separated-values',
+                                     'text/plain',
+                                     '.csv',
+                                     '.tsv'
+                                 )
+                       )
+                      ),
+      
+      conditionalPanel("input.data == 'upload'",
+                       helpText("Upload a file of your choosing.",
+                                "This app will only look in the",
+                                "first column of your .csv!")),
+      
+      conditionalPanel("input.data == 'upload'",
+                       checkboxInput('header', 'Header', TRUE)
+      ),
+      conditionalPanel("input.data == 'upload'",
+                       radioButtons('sep', 'Separator',
+                                    c(Comma=',',
+                                      Semicolon=';',
+                                      Tab='\t'),
+                                    ',')
+      ),
+      conditionalPanel("input.data == 'upload'",
+                       radioButtons('quote', 'Quote',
+                                    c(None='',
+                                      'Double Quote'='"',
+                                      'Single Quote'="'"),
+                                    '"')
+      ),
+      
       conditionalPanel("(input.data == 'n1' || input.data == 'n2')",
       sliderInput("N",
                   "N:",
