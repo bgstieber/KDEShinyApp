@@ -8,13 +8,123 @@ shinyUI(fluidPage(
       column(2,
       #data selector         
       radioButtons('data', 'Data',
-                   choices = c('N(0,1)' = 'n1',
-                               '1/2 N(0,1) + 1/2 N(4,4)' = 'n2',
-                               '1/3 G(1,20) + 1/3 G(4,5) + 1/3 G(20,1)' = 'g1',
+                   choices = c('Normal' = 'n1',
+                               'Mixture of Two Normals' = 'n2',
+                               'Equal Mixture of Three Gammas' = 'g1',
                                'Old Faithful Waiting Times' = 'old',
                                'Top 250 Beers' = 'beer',
-                               'PGA Tour Driving Distance (1986, 1996, 2015)' = 'golf',
+                               'PGA Tour Driving Distance' = 'golf',
                                'Your File Upload' = 'upload')),
+      #data descriptions for old faithful, beer, and golf
+      #old faithful
+      conditionalPanel("input.data == 'old'",
+                       helpText('Old Faithful waiting times from',
+                                'Azzalini and Bowman (1990). Data',
+                                'documents waiting times (in minutes)',
+                                'for an eruption at Old Faithful geyser',
+                                'in Yellowstone National Park (WY).',
+                                'Data collected from 8/1-8/15/1985 (N = 299)')),
+      
+      #beer
+      conditionalPanel("input.data == 'beer'",
+                       helpText('Alcohol by volume ratings (%) of top',
+                                '250 beers as rated on BeerAdvocate.com. (N = 248)')),
+      
+      #golf
+      conditionalPanel("input.data == 'golf'",
+                       helpText('PGA Tour driving distance statistics',
+                                'for 1986, 1996, and 2015 seasons.',
+                                'Note the bimodality of the distribution,',
+                                'as the 2015 season marks a significant departure from',
+                                'the technology of the 20th century. The titanium',
+                                'driver and improved golf ball technology have',
+                                'created many "bombers" off the tee. (N = 552)')),
+      
+      
+      #size of simulation (if applicable)
+      conditionalPanel("(input.data == 'n1' || input.data == 'n2' || input.data == 'g1')",
+                       sliderInput("N",
+                                   "N:",
+                                   min = 10,
+                                   max = 5000,
+                                   value = 500,
+                                   step = 250)
+      ),
+      
+      #control normal
+      
+      conditionalPanel("input.data == 'n1'",
+                       numericInput('mean1', 'Mean for Normal',
+                                    value = 0)),
+      
+      
+      conditionalPanel("input.data == 'n1'",
+                       numericInput('sd1', 'SD for Normal',
+                                    value = 1, min = 0)),
+      
+      #control mixture of normals
+      conditionalPanel("input.data == 'n2'",
+                       h4('Parameters for First Normal'),
+                       sliderInput('pi1.m1', 'Mixing Weight for 1st Normal',
+                                    value = 0.5,
+                                   min = 0, max = 1)
+                       ),
+      
+      conditionalPanel("input.data == 'n2'",
+                       fluidRow(
+                        column(6,
+                       numericInput('mean.m1', 'Mean',
+                                    value = 0)),
+                        column(6,
+                               numericInput('sd.m1', 'SD',
+                                            value = 1, min = 0)
+                               )
+                       )),
+      
+     
+      conditionalPanel("input.data == 'n2'",
+                       h4('Parameters for Second Normal'),
+                       fluidRow(
+                           column(6,
+                                  numericInput('mean.m2', 'Mean',
+                                               value = 4)),
+                           column(6,
+                                  numericInput('sd.m2', 'SD',
+                                               value = 2, min = 0)
+                           )
+                       )),
+      
+      #control mixture of gammas
+      
+      conditionalPanel("input.data == 'g1'",
+                       h4('Parameters for First Gamma'),
+                       fluidRow(
+                           column(6,
+                       numericInput('shape.g1', 'Shape',
+                                    value = 1)),
+                           column(6,
+                       numericInput('scale.g1', 'Scale',
+                                    value = 20)))),
+      
+      conditionalPanel("input.data == 'g1'",
+                       h4('Parameters for Second Gamma'),
+                       fluidRow(
+                           column(6,
+                                  numericInput('shape.g2', 'Shape',
+                                               value = 4)),
+                           column(6,
+                                  numericInput('scale.g2', 'Scale',
+                                               value = 5)))),
+      conditionalPanel("input.data == 'g1'",
+                       h4('Parameters for Third Gamma'),
+                       fluidRow(
+                           column(6,
+                                  numericInput('shape.g3', 'Shape',
+                                               value = 20)),
+                           column(6,
+                                  numericInput('scale.g3', 'Scale',
+                                               value = 1)))),
+      
       #file upload panel
       conditionalPanel("input.data == 'upload'",
                        fileInput('file1', 'Choose file to upload',
@@ -51,14 +161,10 @@ shinyUI(fluidPage(
                                       'Single Quote'="'"),
                                     '"')
       ),
-      #size of simulation (if applicable)
-      conditionalPanel("(input.data == 'n1' || input.data == 'n2' || input.data == 'g1')",
-      sliderInput("N",
-                  "N:",
-                  min = 100,
-                  max = 1000,
-                  value = 300)
-      )),
+      br(),
+      helpText(a(href="https://github.com/bgstieber/KDEShinyApp", 
+                 target="_blank", "View Shiny code"))
+      ),
       #middle column-plot
       column(8,
              plotOutput("Histogram", height = "750px")

@@ -2,6 +2,7 @@
 library(shiny)
 library(rvest)
 library(RCurl)
+library(MASS)
 #grab beer data from github
 git_file <- 
     getURL("https://raw.githubusercontent.com/bgstieber/Top250Beer/master/Top250Beers.csv")
@@ -28,6 +29,9 @@ dd2015 <- pga2015 %>%
     html_table(., header = TRUE)
 
 dd <- c(dd1986[[1]]$AVG., dd1996[[1]]$AVG., dd2015[[1]]$AVG.)
+dd.avg <- c(mean(dd1986[[1]]$AVG.), 
+            mean(dd1996[[1]]$AVG.), 
+            mean(dd2015[[1]]$AVG.))
 
 #approximate variance function
 
@@ -96,13 +100,18 @@ shinyServer(function(input, output) {
     })
  #create list of data, select matching list  
   mydata <- reactive({list(
-    'n1' = rnorm(input$N),
-    'n2' = c(rnorm(n = input$N / 2), 
-             rnorm(n = input$N / 2, mean = 4, sd = 2)),
-    'g1' = c(rgamma(n = input$N / 3, shape=1, scale=20),
-             rgamma(n = input$N / 3, shape = 4, scale = 5),
-             rgamma(n = input$N / 3, shape = 20, scale = 1)),
-    'old' = faithful[,2],
+    'n1' = rnorm(input$N, mean = input$mean1, sd = input$sd1),
+    'n2' = c(rnorm(n = input$N * input$pi1.m1, 
+                   mean = input$mean.m1, sd = input$sd.m1), 
+             rnorm(n = input$N * (1 - input$pi1.m1),
+                   mean = input$mean.m2, sd = input$sd.m2)),
+    'g1' = c(rgamma(n = input$N / 3, 
+                    shape = input$shape.g1, scale = input$scale.g1),
+             rgamma(n = input$N / 3, 
+                    shape = input$shape.g2, scale = input$scale.g2),
+             rgamma(n = input$N / 3, 
+                    shape = input$shape.g3, scale = input$scale.g3)),
+    'old' = geyser[,2],
     'beer' = abv.complete,
     'golf' = dd,
     'upload' = c(data.upload())
@@ -115,9 +124,18 @@ shinyServer(function(input, output) {
              'ucv' = 'Unbiased CV')
 #x axis labels
   x.lab <- reactive({switch(input$data,
-                 'n1' = 'N(0,1)',
-                 'n2' = '0.5 N(0,1) + 0.5 N(4, 4)',
-                 'g1' = '1/3 G(1,20) + 1/3 G(4,5) + 1/3 G(20,1)',
+                 'n1' = paste0('N(', input$mean1, ", ", round(input$sd1^2,2),')'),
+                 'n2' = paste0(round(input$pi1.m1, 2), ' N(', input$mean.m1,
+                               ', ', round(input$sd.m1^2, 2), ') + ',
+                               round(1-input$pi1.m1, 2), ' N(', input$mean.m2, 
+                               ', ', round(input$sd.m2^2, 2), ')'),
+                 'g1' = paste0('1/3', 
+                               ' G(', input$shape.g1, ', ', input$scale.g1, ')',
+                               ' + ', '1/3',
+                               ' G(', input$shape.g2, ', ', input$scale.g2, ')',
+                               ' + ', '1/3',
+                               ' G(', input$shape.g3, ', ', input$scale.g3, ')'
+                 ),
                  'old' = 'Old Faithful Waiting Times (minutes)',
                  'beer' = 'ABV for Top 250 Beers (as rated on BeerAdvocate) (%)',
                  'golf' = 'PGA Tour Driving Distance (1986, 1996, 2015) (yards)',
@@ -147,13 +165,26 @@ shinyServer(function(input, output) {
     hist(x, breaks = bins, col = 'grey93',
          probability = TRUE,
          xlab = x.lab(),
-         main = '',
-         ylim = c(0, 1.02 * max(hist(x, breaks = bins)$density)))
+         main = ifelse(input$data == 'golf', 
+                       'Vertical lines indicate average distance for\n1986 (orange), 1996 (blue), and 2015 (black)',
+                       ''),
+         ylim = c(0, 1.025 * max(hist(x, breaks = bins)$density)))
+        if(input$data == 'golf'){
+            abline(v = dd.avg, col = c('darkorange2','dodgerblue2','black'), lwd = 3,
+                   lty = 2)
+        }
+        
     }else{
         hist(x, breaks = bins, col = 'grey93',
              probability = FALSE,
              xlab = x.lab(),
-             main = '')
+             main = ifelse(input$data == 'golf', 
+                           'Vertical lines indicate average distance for\n1986 (orange), 1996 (blue), and 2015 (black)',
+                           ''))
+        if(input$data == 'golf'){
+            abline(v = dd.avg, col = c('darkorange2','dodgerblue2','black'), lwd = 3,
+                   lty = 2)
+        }
     }
     
     box() #put a box around it
