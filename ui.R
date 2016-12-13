@@ -10,8 +10,8 @@ shinyUI(fluidPage(
                    choices = c('N(0,1)' = 'n1',
                                '1/2 N(0,1) + 1/2 N(4,4)' = 'n2',
                                '1/3 G(1,20) + 1/3 G(4,5) + 1/3 G(20,1)' = 'g1',
-                               'Old Faithful' = 'old',
-                               'Beer ABV' = 'beer',
+                               'Old Faithful Waiting Times' = 'old',
+                               'Top 250 Beers' = 'beer',
                                'PGA Tour Driving Distance (1986, 1996, 2015)' = 'golf',
                                'Your File Upload' = 'upload')),
       conditionalPanel("input.data == 'upload'",
@@ -68,8 +68,8 @@ shinyUI(fluidPage(
                   max = 75,
                   value = 25),
       radioButtons('dens',
-                   'Plot Density',
-                   c(FALSE, TRUE)
+                   'Plot Type',
+                   c('Frequency' = FALSE, 'Density' = TRUE)
                    ),
       conditionalPanel(condition = "input.dens",
                        numericInput('bw','Density Bandwidth', 1, min = 1e-3)),
