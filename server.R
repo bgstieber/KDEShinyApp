@@ -64,7 +64,7 @@ shinyServer(function(input, output) {
                  'n2' = '0.5 N(0,1) + 0.5 N(4, 4)',
                  'g1' = '1/3 G(1,20) + 1/3 G(4,5) + 1/3 G(20,1)',
                  'old' = 'Old Faithful Waiting Times (minutes)',
-                 'beer' = 'ABV for top 250 Beers (%)',
+                 'beer' = 'ABV for Top 250 Beers (as rated on BeerAdvocate) (%)',
                  'golf' = 'PGA Tour Driving Distance (1986, 1996, 2015) (yards)',
                  'upload' = 'Your Data')})
   
@@ -92,6 +92,8 @@ shinyServer(function(input, output) {
          probability = input$dens,
          xlab = x.lab(),
          main = '')
+    
+    box()
     
     if(input$dens){
       lines(density(x, bw = input$bw))
