@@ -33,12 +33,12 @@ shinyUI(fluidPage(
       #golf
       conditionalPanel("input.data == 'golf'",
                        helpText('PGA Tour driving distance statistics',
-                                'for 1986, 1996, and 2015 seasons.',
+                                'for 1986, 1996, 2006, and 2015 seasons.',
                                 'Note the bimodality of the distribution,',
-                                'as the 2015 season marks a significant departure from',
+                                'as the 2006 and 2015 seasons mark significant departures from',
                                 'the technology of the 20th century. The titanium',
                                 'driver and improved golf ball technology have',
-                                'created many "bombers" off the tee. (N = 552)')),
+                                'created many "bombers" off the tee. (N = 748)')),
       
       
       #size of simulation (if applicable)
